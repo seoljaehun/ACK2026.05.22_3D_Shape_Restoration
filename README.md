@@ -1,8 +1,91 @@
-# 🥇ACK2026.03.18_3D_Shape_Restoration
+# 🥇ACK2026.05.22_3D_Shape_Reconstruction
 
 ---
-### Frequency－Aware Feature Fusion for 3D Shape Reconstruction Toward Robot Grasp Planning
+### 3D Shape Reconstruction based on Frequency-Aware Local Feature Enhancement
 
 - 저자: 설재훈, 장한결, 최승범, 김영균
 
+로봇의 안정적인 파지 계획 수립을 위해서는 정확한 3차원 형상과 기하 정보가 필수적이다. 그러나 
+기존 3D 형상 복원 모델들은 Spectral Bias 특성으로 인해 물체의 모서리나 굴곡 같은 고주파 세부 
+형상을 정밀하게 복원하는 데 한계를 보인다. 이에 본 연구에서는 DWT 고주파 맵을 가이드 삼아 지
+역 특징을 선택적으로 강화하는 주파수 인지 기반 3D 형상 복원 네트워크를 제안한다. 연구 결과, 제
+안 기법은 Baseline 대비 Chamfer Distance 16.32% 감소, Volumetric IoU 1.13%p 향상 등을 달성
+하며, 세부 형상의 복원 및 신뢰도 높은 기하 정보 제공에 대한 정량적 유효성을 입증하였다.
+
 ---
+
+# 1. 데이터 셋
+
+- Occupancy Networks에서 제안된 프로토콜을 통해 전처리된 대규모 3D 객체 데이터 셋 ShapeNet Core 활용
+
+  **Train/Validation/Test**
+
+  > RGB Image : 0000/000/000 개 (.jpg), 24개의 시점에서 렌더링 된 객체 이미지
+  >
+  > Ground-Truth : 0000/000/000 개 (.jpg), 3D 좌표와 물체 내 존재 여부를 나타내는 이진 데이터 쌍
+  >
+  > Camera parameter : 0000/000/000 개 (.jpg)
+  
+# 2. 문제 제기
+
+**필요성**
+
+- 로봇이 물체를 안정적으로 파지하려면 표면 구조와 6D 공간 자세를 반영한 정밀한 3차원 형상 인식이 필수적
+- 실제 환경에서는 단일 카메라 시점에 의존하기 때문에, 가려진 뒷면의 기하 정보 손실이 빈번하게 발생
+
+**기존 방식 문제**
+
+- spectralbias 이미지
+
+- 기존 MLP 기반 딥러닝 모델들은 저주파 성분을 먼저 학습하는 Spectral Bias 특성을 지님
+- 이로 인해 전반적인 형태는 잘 잡지만, 모서리나 굴곡 같은 고주파 세부 기하 구조가 뭉툭하게 표현(Over-smoothing)되는 뚜렷한 한계가 존재
+
+# 3. 알고리즘 구조
+
+단일 시점 이미지로부터 보이지 않는 영역을 포함한 전체 3D 형상을 정밀하게 복원
+
++ **Feature Extraction**
+
+  - CNN 기반 인코더를 거쳐 물체의 시각적 윤곽을 파악하고 전역/지역 특징을 추출
+  - 이산 웨이블릿 변환(DWT, Level 2)을 통해 이미지의 엣지와 텍스처 등 고주파 성분만을 분해 및 정제
+ 
++ **Decoder**
+
+  - 전역 특징을 바탕으로 물체의 전체적인 뼈대(Baseline)를 우선적으로 구성
+  - 주파수 특징을 어텐션 가중치로 변환해, 기존 뼈대 위에 미세한 고주파수 디테일만을 선택적으로 강화
+
+# 4. 세부 알고리즘 구현
+
++ **Spatial & Frequency Feature Extraction**
+
+  - **Spatial Branch** :
+    - 잔차 연결을 통해 안정적인 학습이 가능하고 연산 효율이 높은 ResNet-18을 인코더 백본으로 채택
+    - 초기 레이어의 세밀한 시각 패턴(지역 특징)부터 심층 레이어의 전체적인 윤곽까지 단계적으로 통합되어 1D 전역 특징 도축
+    - 각 계층의 중간 레이어에서 다중 스케일의 2D 지역 특징(Local Features)을 추출
+   
+  - **Frequency Branch** :
+    - 공간-주파수 국소화 특성이 우수한 Level 2 2D-DWT를 도입하여 이미지를 주파수 대역별로 분해
+    - 저주파 성분(LL)은 배제하고, 미세 표면 굴곡 복원에 집중하기 위해 RGB 채널별 고주파 성분(LH, HL, HH)만을 선택적으로 결합하여 엣지와 텍스처 정보를 추출 및 정제
+
++ **Double Track Decoder**
+
+  - **Global Decoder** :
+    - 전역 문맥을 반영하여 3D 물체의 전체적인 형태와 기본 뼈대(Baseline)를 구성하는 전역 Logit을 생성
+    - 3D 공간 좌표가 다수의 ResNet 블록을 통과할 때 인코더의 1D 전역 특징을 조건으로 주입하는 CBN을 적용하여, 공간 특징을 전체 형상에 맞게 동적으로 변조
+   
+  - **Local Decoder** :
+    - 주파수 특징dl 다층 신경망(MLP)과 시그모이드 함수를 거쳐 포인트 단위의 어텐션 가중치를 산출
+    - 산출된 가중치를 2D 지역 특징에 요소별로 곱하여($\odot$) 형상 복원에 유의미한 미세 표면 굴곡 및 디테일 영역만을 선택적으로 강화
+    - 본 뼈대를 기하학적으로 보완해 줄 고주파수 디테일 잔차로 동작
+   
++ **Implicit Occupancy Representation**
+
+  - 고정 해상도 제약을 극복하기 위해, 연속적인 3D 공간 좌표($p \in R^3$)의 점유 확률을 학습하는 방식
+  - 전역 위상을 잡는 Global Decoder와 디테일을 가감하는 Local Decoder의 예측값(Logit)을 합산하여 최종 점유 확률을 도출
+ 
++ **3D Mesh Reconstruction**
+
+  - 최종 결합된 점유 확률 공간 볼륨에 결정 경계를 적용하고, Marching Cubes 알고리즘을 적용하여 정교하고 매끄러운 최종 3D 메쉬를 생성
+ 
+
+
