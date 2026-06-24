@@ -3,7 +3,7 @@
 ---
 ### 3D Shape Reconstruction based on Frequency-Aware Local Feature Enhancement
 
-- 저자: 설재훈, 장한결, 최승범, 김영균
+- 저자: 설재훈, 장한결, 최승범, 김경민, 이규원, 김영균
 
 로봇의 안정적인 파지 계획 수립을 위해서는 정확한 3차원 형상과 기하 정보가 필수적이다. 그러나 
 기존 3D 형상 복원 모델들은 Spectral Bias 특성으로 인해 물체의 모서리나 굴곡 같은 고주파 세부 
