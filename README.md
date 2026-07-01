@@ -96,7 +96,32 @@
 
   - 최종 결합된 점유 확률 공간 볼륨에 결정 경계를 적용하고, Marching Cubes 알고리즘을 적용하여 정교하고 매끄러운 최종 3D 메쉬를 생성
 
- # 5. 실험 결과
- 
+# 5. 실험 결과
+제안 모델을 기존 Baseline, 정답 GT와 시각적으로 비교하고, 평가지표를 통해 성능 향상을 정량적으로 입증
 
+![3D Shape Result](https://github.com/seoljaehun/ACK2026.05.22_3D_Shape_Restoration/blob/main/Image_Data/3D%20Shape%20Result_hori.png)
 
+![3D Shape Metrics](https://github.com/seoljaehun/ACK2026.05.22_3D_Shape_Restoration/blob/main/Image_Data/Metrics.PNG)
+
+- 단일 전역 특징 기반의 Baseline 모델이 빈 공간을 과도하게 평활화하여 메워버린 반면, 제안 기법은 복잡한 위상 구조의 미세한 디테일과 빈 공간을 성공적으로 복원
+- 표면 간 최소 거리 오차를 나타내는 핵심 지표인 Chamfer Distance(CD)를 0.0192에서 0.0161로 약 16.32% 감소
+- Volumetric IoU와 1% 거리 오차 내 Point Matching F-Score를 각각 1.13%p, 4.90%p 향상
+- Spectral Bias로 인해 학습하기 어려운 고주파 성분까지 정교하게 복원함으로써, 기존 모델의 한계를 극복하고 정밀 작업 적용에 대한 유효성을 입증
+
+# 6. 결론
+
+![Camera Ray](https://github.com/seoljaehun/ACK2026.05.22_3D_Shape_Restoration/blob/main/Image_Data/Camera%20Ray.png)
+
+- 복잡한 위상 구조의 미세한 디테일을 성공적으로 복원하고 평가지표를 크게 향상시켜 로봇 파지 등 정밀 작업에서의 유효성을 입증
+- 단일 시점 정보 의존으로 인한 깊이 모호성(Depth Ambiguity) 때문에 복원된 객체가 카메라 광선 방향을 따라 길게 늘어지는 현상이 일부 관찰
+- 향후 이러한 기하학적 왜곡을 해결하기 위해 객체의 특징을 여러 직교 평면에 투영하여 다각도로 통합하는 Multi-Plane 표현 방식 기반의 연구를 진행할 계획
+
+---
+
+# 관련 자료
+
+- Paper : <https://kiss.kstudy.com/Detail/Ar?key=4254299>
+- Dataset : <https://shapenet.org>
+- 참고 문헌 : <https://github.com/seoljaehun/ACK2025.11.07_Transparent_Object_Restoration/blob/main/Reference/%EC%B0%B8%EA%B3%A0%EB%AC%B8%ED%97%8C>
+
+---
