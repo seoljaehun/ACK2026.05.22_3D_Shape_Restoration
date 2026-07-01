@@ -28,14 +28,18 @@
   
 # 2. 문제 제기
 
+![Occlusion Surface](https://github.com/seoljaehun/ACK2026.05.22_3D_Shape_Restoration/blob/main/Image_Data/Occlusion%20Surface.PNG)
+
 **필요성**
 
 - 로봇이 물체를 안정적으로 파지하려면 표면 구조와 6D 공간 자세를 반영한 정밀한 3차원 형상 인식이 필수적
 - 실제 환경에서는 단일 카메라 시점에 의존하기 때문에, 가려진 뒷면의 기하 정보 손실이 빈번하게 발생
 
-**기존 방식 문제**
 
-- spectralbias 이미지
+
+![Spectral Bias](https://github.com/seoljaehun/ACK2026.05.22_3D_Shape_Restoration/blob/main/Image_Data/Spectral%20Bias.PNG)
+
+**기존 방식 문제**
 
 - 기존 MLP 기반 딥러닝 모델들은 저주파 성분을 먼저 학습하는 Spectral Bias 특성을 지님
 - 이로 인해 전반적인 형태는 잘 잡지만, 모서리나 굴곡 같은 고주파 세부 기하 구조가 뭉툭하게 표현(Over-smoothing)되는 뚜렷한 한계가 존재
@@ -43,6 +47,8 @@
 # 3. 알고리즘 구조
 
 단일 시점 이미지로부터 보이지 않는 영역을 포함한 전체 3D 형상을 정밀하게 복원
+
+![Overall System Process](https://github.com/seoljaehun/ACK2026.05.22_3D_Shape_Restoration/blob/main/Image_Data/Overall%20System%20process_2.png)
 
 + **Feature Extraction**
 
@@ -59,11 +65,13 @@
 + **Spatial & Frequency Feature Extraction**
 
   - **Spatial Branch** :
+![Spatial Feature Extraction](https://github.com/seoljaehun/ACK2026.05.22_3D_Shape_Restoration/blob/main/Image_Data/Spatial%20Feature%20Extraction.png)
     - 잔차 연결을 통해 안정적인 학습이 가능하고 연산 효율이 높은 ResNet-18을 인코더 백본으로 채택
     - 초기 레이어의 세밀한 시각 패턴(지역 특징)부터 심층 레이어의 전체적인 윤곽까지 단계적으로 통합되어 1D 전역 특징 도축
     - 각 계층의 중간 레이어에서 다중 스케일의 2D 지역 특징(Local Features)을 추출
-   
+ 
   - **Frequency Branch** :
+![Spatial Feature Extraction](https://github.com/seoljaehun/ACK2026.05.22_3D_Shape_Restoration/blob/main/Image_Data/Spatial%20Feature%20Extraction.png)
     - 공간-주파수 국소화 특성이 우수한 Level 2 2D-DWT를 도입하여 이미지를 주파수 대역별로 분해
     - 저주파 성분(LL)은 배제하고, 미세 표면 굴곡 복원에 집중하기 위해 RGB 채널별 고주파 성분(LH, HL, HH)만을 선택적으로 결합하여 엣지와 텍스처 정보를 추출 및 정제
 
