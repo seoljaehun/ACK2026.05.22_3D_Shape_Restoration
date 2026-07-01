@@ -16,15 +16,15 @@
 
 # 1. 데이터 셋
 
-- Occupancy Networks에서 제안된 프로토콜을 통해 전처리된 대규모 3D 객체 데이터 셋 ShapeNet Core 활용
+Occupancy Networks에서 제안된 프로토콜을 통해 전처리된 대규모 3D 객체 데이터 셋 ShapeNet Core 활용
 
   **Train/Validation/Test**
 
-  > RGB Image : 0000/000/000 개 (.jpg), 24개의 시점에서 렌더링 된 객체 이미지
+  > RGB Image : 35024/4378/4381 개 (.jpg), 24개의 시점에서 렌더링 된 객체 이미지
   >
-  > Ground-Truth : 0000/000/000 개 (.jpg), 3D 좌표와 물체 내 존재 여부를 나타내는 이진 데이터 쌍
+  > Ground-Truth : 35024/4378/4381 개 (.npz), 3D 좌표와 물체 내 존재 여부를 나타내는 이진 데이터 쌍
   >
-  > Camera parameter : 0000/000/000 개 (.jpg)
+  > Camera parameter : 35024/4378/4381 개 (.npz)
   
 # 2. 문제 제기
 
@@ -55,8 +55,8 @@
  
 **Decoder**
 
-  - 전역 특징을 바탕으로 물체의 전체적인 뼈대(Baseline)를 우선적으로 구성
-  - 주파수 특징을 어텐션 가중치로 변환해, 기존 뼈대 위에 미세한 고주파수 디테일만을 선택적으로 강화
+  - 큰 뼈대를 구축하는 Global Decoder와 미세한 디테일을 살리는 Local Decoder가 병렬로 작동
+  - 두 디코더의 결과값을 합산하여 3차원 공간의 점유 확률을 예측하고 최종 3D 메쉬 형상을 생성
 
 # 4. 세부 알고리즘 구현
 
@@ -83,7 +83,7 @@
 
   - **Local Decoder** :
 ![Local Decoder](https://github.com/seoljaehun/ACK2026.05.22_3D_Shape_Restoration/blob/main/Image_Data/Local%20Decoder.PNG)
-    - 주파수 특징dl 다층 신경망(MLP)과 시그모이드 함수를 거쳐 포인트 단위의 어텐션 가중치를 산출
+    - 주파수 특징이 다층 신경망(MLP)과 시그모이드 함수를 거쳐 포인트 단위의 어텐션 가중치를 산출
     - 산출된 가중치를 2D 지역 특징에 요소별로 곱하여($\odot$) 형상 복원에 유의미한 미세 표면 굴곡 및 디테일 영역만을 선택적으로 강화
     - 본 뼈대를 기하학적으로 보완해 줄 고주파수 디테일 잔차로 동작
    
@@ -121,7 +121,7 @@
 # 관련 자료
 
 - Paper : <https://kiss.kstudy.com/Detail/Ar?key=4254299>
-- Dataset : <https://shapenet.org>
-- 참고 문헌 : <https://github.com/seoljaehun/ACK2025.11.07_Transparent_Object_Restoration/blob/main/Reference/%EC%B0%B8%EA%B3%A0%EB%AC%B8%ED%97%8C>
+- Dataset : <https://shapenet.org>, <https://github.com/autonomousvision/occupancy_networks>
+- 참고 문헌 : <https://github.com/seoljaehun/ACK2026.05.22_3D_Shape_Restoration/blob/main/Reference/%EC%B0%B8%EA%B3%A0%EB%AC%B8%ED%97%8C>
 
 ---
